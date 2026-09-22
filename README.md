@@ -3,6 +3,19 @@
 以 Codex 开源执行内核为基底的数学建模 Agent。当前包含完整 Codex 源码和
 后端 后端核心，前后端放在同一仓库，前端当前为工程基座。
 
+## 先用工作流跑题
+
+已提供不依赖前后端服务的 [Codex 数模工作流](docs/workflow-quickstart.md)：
+题目理解 → 数据 → 基线 → 按需改进 → 验证 → 报告 → 复现交付。
+入口为 `.agents/skills/mathmodel-workflow/SKILL.md`，脚本保存真实执行与阶段产物。
+
+```sh
+python3 scripts/demo-workflow.py --project modeling-projects/facility-demo --destination modeling-projects/facility-delivery
+```
+
+这条命令运行不调用模型的完整选址样例。真实题目的初始化、Codex 源码内核启动和恢复操作见快速开始。
+当前本地工作流已实现；后端跨任务自动编排与业务界面仍待实现。
+
 ## 仓库结构
 
 - `codex-runtime/`：完整 Codex 源码快照，可在本仓库分支中修改、构建。
@@ -78,3 +91,12 @@ main 保存可复现的项目快照，codex/math-agent-runtime 是执行内核�
 
 当前每个运行对应一个有验收标准的建模任务，支持持久化尝试、审批和人工结果验收。
 尚未实现任务 DAG、实验与产物版本体系、多 Agent 调度以及前端界面。
+
+## 工作流设计
+
+[统一数学建模工作流](docs/design/unified-modeling-workflow.md) 是后续设计主入口，整合既有总结、
+math-model 调度参考与 mathodology 方法，定义模块交接、工具调用、科学验证、返工恢复和落地次序。
+当前为设计提案，尚未实现跨任务自动编排。
+
+[原工作流 v1](docs/design/math-workflow-v1.md) 与 [调度参考核对](docs/design/math-model-scheduler-review.md)
+保留作为设计依据；早期参考仓库评估与完整性复评已归档到 `docs/design/references/`。

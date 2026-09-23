@@ -1,5 +1,7 @@
 # LaTeX 编译与页面检查
 
+赛事论文先按 [格式配置](contest.md) 生成自己的主文件与章节安排；此处只处理编译和页面证据。编译成功不代表满足比赛页数、匿名或内容要求。
+
 先运行 `python3 publication.py doctor`（脚本在 Skill scripts 目录），检查绘图、LaTeX 和 Poppler 环境。中文默认使用 assets/latex/main-zh.tex 的 ctex/项目内 TrueType 字体模板与 XeLaTeX 或 Tectonic；英文模板 main-en.tex 可使用 pdfLaTeX。模板是独立实现，吸收 math-model 的分章节论文、编译修复和页面检查流程；不假定特定比赛页数与格式。按本题规则修改。
 
 ## 中文字体交付

@@ -18,6 +18,16 @@ description: Solve or continue a mathematical modeling problem through data prep
 每阶段用 `next` 获取对应参考文件，按需读取，避免把全部历史提示一次性塞入上下文。
 相邻小步骤可以在同一会话连续做；小问的共享参数和结果依赖写入 problem.md。
 
+## 解题与写作指导
+
+- 理解阶段按 [题意分析](references/problem.md) 建立稳定的小问编号；保留题目内部各项要求，后续模型、代码、验证和正文沿用这些编号。
+- 建模阶段按 [模型与实现](references/model.md) 对齐公式、算法和实际代码；新增复杂度必须回应具体不足。
+- 验证阶段读取 [结论证据审查](references/claims.md)，将支持范围和缺口写入验证产物；论文只使用证据支持的表述。
+- 写作阶段按 [分章写作](references/paper-writing.md) 组织论证。有赛事要求时，从理解阶段起使用 [赛事格式配置](references/contest.md)。
+- `assets/worksheets/` 提供可裁剪的内容模板，合并到对应阶段产物即可；不要求为简单题增加独立台账。方法参考及取舍见 [来源说明](references/method-provenance.md)。
+
+这些指导由宿主 Agent 执行；现有脚本不自动判断小问覆盖、科学正确性或赛事合规。
+
 ## 执行循环
 
 1. 读取题目、当前阶段简报和前序产物；确认工具环境及剩余执行次数。

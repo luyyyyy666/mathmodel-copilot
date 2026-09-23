@@ -1,0 +1,11 @@
+{
+  "profile": "generic",
+  "competition": null,
+  "year": null,
+  "division": null,
+  "problem_id": null,
+  "language": null,
+  "requirements": [],
+  "layout_choices": {},
+  "unresolved": ["尚未填写任务要求；这不是已经核验的赛事规则配置。"]
+}

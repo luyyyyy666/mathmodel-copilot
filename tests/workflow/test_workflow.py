@@ -153,11 +153,19 @@ class WorkflowTest(unittest.TestCase):
         self.write('proof.md', 'Review evidence for the fixture.')
         self.write('verification.json', json.dumps(report))
         self.call('complete', '--stage', 'verify')
+        self.write('figure-manifest.json', '{"figures":[],"reason":"Symbolic proof"}')
+        self.call('complete', '--stage', 'figures')
         self.write('report.md')
         self.call('complete', '--stage', 'report', ok=False)
-        self.write('report.pdf', 'Not a real PDF')
-        self.write('render-review.md')
-        self.call('complete', '--stage', 'report', ok=False)
+        self.write('main.tex', 'Theory paper source')
+        self.write('paper-manifest.json', json.dumps({'main': 'main.tex', 'files': ['main.tex'],
+                   'bibliography': 'none', 'claims': [{'text': 'Proof', 'evidence': 'proof.md'}]}))
+        self.call('complete', '--stage', 'report')
+        self.assertEqual(self.call('next')['next']['id'], 'compile')
+        self.write('report.pdf', '%PDF-placeholder cannot substitute for compilation')
+        self.write('compile-report.json', '{"status":"succeeded"}')
+        failure = self.call('complete', '--stage', 'compile', ok=False)
+        self.assertIn('recorded execution', str(failure))
 
     def test_init_never_overwrites_existing_project(self):
         before = (self.project / '.workflow/state.json').read_bytes()

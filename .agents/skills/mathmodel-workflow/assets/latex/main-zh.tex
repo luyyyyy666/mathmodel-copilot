@@ -1,0 +1,20 @@
+% Project-authored generic Chinese modeling template. Contest rules are task-specific.
+\documentclass[UTF8,a4paper,11pt,fontset=none]{ctexart}
+% Supply licensed project-local TrueType fonts, and declare them in paper-manifest.json.
+% Identity CID mapping plus embedded Unicode mapping avoids external Adobe-GB1 data.
+\setCJKmainfont[Path=fonts/,BoldFont=CJK-Bold.ttf,ItalicFont=CJK-Regular.ttf]{CJK-Regular.ttf}
+\setCJKsansfont[Path=fonts/,BoldFont=CJK-Bold.ttf]{CJK-Regular.ttf}
+\setCJKmonofont[Path=fonts/]{CJK-Regular.ttf}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,graphicx,longtable}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../figures/}}
+\title{数学建模报告}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\input{sections/abstract}
+\input{sections/body}
+% Enable only for verified citations: \bibliographystyle{plain}\bibliography{references}
+\end{document}

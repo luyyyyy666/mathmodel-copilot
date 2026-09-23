@@ -15,10 +15,17 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from publication_contract import publication_files
 
 BUNDLE = Path(__file__).resolve().parents[1]
 STAGES = json.loads((BUNDLE / 'assets/stages.json').read_text())
+LEGACY_STAGES = json.loads((BUNDLE / 'assets/stages-v1.json').read_text())
 IDS = [s['id'] for s in STAGES]
+
+
+def stages(state):
+    definitions = LEGACY_STAGES if state['format'] == 1 else STAGES
+    return [s for s in definitions if not s.get('pdf_only') or state['require_pdf']]
 
 
 def require(condition, message):
@@ -109,7 +116,7 @@ def pending(root):
 
 
 def current(state):
-    return next((s for s in STAGES if s['id'] not in state['stages']), None)
+    return next((s for s in stages(state) if s['id'] not in state['stages']), None)
 
 
 def ready(root, state, stage):
@@ -156,7 +163,7 @@ def init(args, root):
         '先运行 `python3 .agents/skills/mathmodel-workflow/scripts/workflow.py status --project .`\n'
         '和 `next --project .`，从当前阶段继续。实际执行计算、验证和交付，不只写计划。\n'
         '阶段登记不是用户验收；沿用用户授权与宿主权限，不修改原始 inputs 或状态文件绕过检查。\n', encoding='utf-8')
-    state = {'format': 1, 'title': args.title or sources[0].stem, 'created_at': now(),
+    state = {'format': args.workflow_version, 'title': args.title or sources[0].stem, 'created_at': now(),
              'kind': args.kind, 'require_pdf': args.pdf, 'max_runs': args.max_runs,
              'revision': 1, 'inputs': refs, 'stages': {}, 'history': []}
     save(root, state)
@@ -237,7 +244,7 @@ def complete(args, root, state):
     paths = list(dict.fromkeys([*step['outputs'], *args.artifact]))
     if args.stage == 'verify':
         paths.extend(verification(root, state))
-    if args.stage == 'report' and state['require_pdf']:
+    if state['format'] == 1 and args.stage == 'report' and state['require_pdf']:
         paths.extend(['report.pdf', 'render-review.md'])
         require(local(root, 'report.pdf').read_bytes().startswith(b'%PDF-'), 'report.pdf is not a PDF.')
     files = [snapshot(root, p) for p in dict.fromkeys(paths)]
@@ -254,11 +261,13 @@ def complete(args, root, state):
         files.append(snapshot(root, name, internal=True))
         files.extend(snapshot(root, p, internal=True, nonempty=False) for p in receipt['logs'])
         executions.append(receipt)
-    require(not step['execution'] or state['kind'] == 'theory' or executions,
+    require(not step['execution'] or (state['kind'] == 'theory' and args.stage not in ['compile', 'inspect']) or executions,
             'This stage needs a successful, recorded execution (--execution ID).')
     if args.stage == 'verify' and state['kind'] != 'theory':
         require(any(any(r['path'] == 'verification.json' for r in e['outputs']) for e in executions),
                 'verification.json must be produced by a recorded verification command.')
+    extra = publication_files(root, state, args.stage, executions, local)
+    files.extend(snapshot(root, p) for p in extra)
     state['stages'][args.stage] = {'status': 'done', 'at': now(), 'revision': state['revision'],
                                  'files': files, 'executions': args.execution, 'note': args.note}
     save(root, state)
@@ -268,8 +277,10 @@ def complete(args, root, state):
 def reopen(root, state, stage, reason):
     require(reason.strip(), 'A reason is required.')
     require(not pending(root), 'Resolve the interrupted execution first.')
-    index = IDS.index(stage)
-    old = {s: state['stages'].pop(s) for s in IDS[index:] if s in state['stages']}
+    active_ids = [s['id'] for s in stages(state)]
+    require(stage in active_ids, 'Stage is not enabled for this project.')
+    index = active_ids.index(stage)
+    old = {s: state['stages'].pop(s) for s in active_ids[index:] if s in state['stages']}
     state['history'].append({'revision': state['revision'], 'at': now(), 'reason': reason,
                              'from': stage, 'stages': old, 'inputs': state['inputs']})
     state['revision'] += 1
@@ -303,7 +314,7 @@ def export(root, state, destination):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    for name in ['init', 'status', 'next', 'check', 'run', 'complete', 'skip', 'reopen', 'refresh-inputs', 'export', 'abandon']:
+    for name in ['init', 'status', 'next', 'check', 'run', 'complete', 'skip', 'reopen', 'refresh-inputs', 'export', 'abandon', 'upgrade']:
         sub = subs.add_parser(name)
         sub.add_argument('--project', required=True)
         if name == 'init':
@@ -313,9 +324,10 @@ def main():
             sub.add_argument('--kind', choices=['general', 'optimization', 'prediction', 'simulation', 'evaluation', 'theory'], default='general')
             sub.add_argument('--max-runs', type=int, default=20)
             sub.add_argument('--pdf', action='store_true')
+            sub.add_argument('--workflow-version', type=int, choices=[1, 2], default=2)
         if name in ['run', 'complete', 'skip', 'reopen']:
             sub.add_argument('--stage', choices=IDS, required=True)
-        if name in ['skip', 'reopen', 'refresh-inputs', 'abandon']:
+        if name in ['skip', 'reopen', 'refresh-inputs', 'abandon', 'upgrade']:
             sub.add_argument('--reason', required=True)
         if name == 'run':
             sub.add_argument('--input', action='append', required=True)
@@ -337,7 +349,7 @@ def main():
             result = init(args, root)
         else:
             with locked(root) as state:
-                require(state['format'] == 1, 'Unsupported workflow format.')
+                require(state['format'] in [1, 2], 'Unsupported workflow format.')
                 if args.command in ['status', 'next', 'check']:
                     issues = problems(root, state)
                     active = pending(root)
@@ -367,6 +379,20 @@ def main():
                     result = reopen(root, state, 'understand', args.reason)
                     state['inputs'] = new
                     save(root, state)
+                elif args.command == 'upgrade':
+                    require(state['format'] == 1, 'Project already uses workflow v2.')
+                    require(not problems(root, state), 'Repair drift before upgrading.')
+                    result = reopen(root, state, 'report', args.reason)
+                    target = root / '.agents/skills/mathmodel-workflow'
+                    if BUNDLE != target.resolve():
+                        staging = root / '.workflow' / ('bundle-' + uuid.uuid4().hex)
+                        shutil.copytree(BUNDLE, staging, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+                        if target.exists():
+                            target.rename(root / '.workflow' / ('previous-bundle-' + uuid.uuid4().hex))
+                        staging.rename(target)
+                    state['format'] = 2
+                    save(root, state)
+                    result.update(format=2, next=current(state))
                 elif args.command == 'export':
                     result = export(root, state, args.destination)
                 else:

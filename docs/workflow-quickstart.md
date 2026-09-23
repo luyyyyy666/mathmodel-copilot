@@ -95,3 +95,26 @@ npm test
 Codex 接入依据：仓库现有 .agents 技能发现代码、源码 CLI --help，以及
 [官方 Skills 文档](https://developers.openai.com/codex/skills)和
 [官方 AGENTS.md 文档](https://developers.openai.com/codex/guides/agents-md)（2026-09-22 查阅）。
+
+## 图表与 LaTeX 集成（工作流格式 2）
+
+新任务默认依次执行：理解、数据、基线、改进、验证、科学图表、论文、LaTeX 编译（--pdf）、逐页检查（--pdf）、复现交付。Mathodology 的 20 类绘图模板/样式卡片保留 MIT 许可和固定来源版本；math-model 的论文分章、编译诊断与渲染检查流程以独立模板和工具适配器实现。无须先启动全栈 Agent；宿主大模型按 Skill 调工具即可继续。
+
+```sh
+python3 -m venv .runtime/publication-env
+.runtime/publication-env/bin/pip install -r .agents/skills/mathmodel-workflow/assets/figures/requirements.txt
+.runtime/publication-env/bin/python .agents/skills/mathmodel-workflow/scripts/publication.py doctor
+.runtime/publication-env/bin/python scripts/demo-publication.py --project modeling-projects/publication-demo --destination modeling-projects/publication-delivery
+```
+
+另外配置 XeLaTeX（中文建议）或 Tectonic，以及 Poppler。演示会在 figure-review.json 和 render-review.json 缺失时暂停，宿主查看真实图片后按 Skill references/figures.md、latex.md 写入逐图/逐页观察与哈希，再运行同一命令继续。不会自动填通过审查。该确定性示例不调用模型 API，展示合成选址数据的模型、求解、独立检验、三张图和中文论文，不代表任意比赛题的效果。旧 demo-workflow.py 保留格式 1 基础回归；加 --publication 可初始化新版 PDF 示例到绘图阶段。
+
+旧项目可用更新后的 workflow.py upgrade --project PATH --reason REASON 显式升级；已完成 report/deliver 将失效并保留历史。新增协议是完整性和溯源检查，不是自动证明数学、排版或引用正确。
+
+部分 Poppler 分发缺少中文 Adobe-GB1 映射。工具会拒绝这类漏字渲染；可在同一隔离环境安装 `pypdfium2 Pillow`，演示命令加 `--renderer pdfium`，helper render 同样支持此参数。
+
+### 中文正文兼容性
+
+中文模板现在要求项目内 TrueType 常规/粗体字体，随源文件声明并嵌入 PDF。示例在论文阶段需要 `--font /path/to/NotoSansSC.ttf --font-license /path/to/OFL.txt`，从 [Google Fonts 的 Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 获取授权源字体与 OFL 许可。FontTools 从该源字体按本稿正文生成两个子集，字体、许可和来源文件一同交付。无需安装系统字体。使用 assets/figures/requirements.txt 安装示例依赖。
+
+示例 manifest 的 unicode_probes 检查中文正文可提取、字体已嵌入、Unicode 映射存在；仍必须实际渲染检查。仅换成 PDFium 能显示，不能证明原预览器的正文漏字已经修好。

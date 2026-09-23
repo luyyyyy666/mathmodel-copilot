@@ -27,7 +27,7 @@ async function main() {
   if (!values.project) throw new Error('--project is required');
   const project = await realpath(values.project);
   const state = JSON.parse(await readFile(path.join(project, '.workflow/state.json'), 'utf8'));
-  if (state.format !== 1) throw new Error('Unsupported or uninitialized workflow workspace');
+  if (![1, 2].includes(state.format)) throw new Error('Unsupported or uninitialized workflow workspace');
   await access(path.join(project, '.agents/skills/mathmodel-workflow/SKILL.md'));
   await access(path.join(project, 'AGENTS.md'));
   const registration = JSON.parse(await readFile(values.registration, 'utf8'));

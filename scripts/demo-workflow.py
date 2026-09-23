@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--project', required=True)
     parser.add_argument('--destination', required=True)
+    parser.add_argument('--publication', action='store_true', help='Prepare a v2 PDF project through scientific verification; continue with demo-publication.py')
     args = parser.parse_args()
     project = Path(args.project).resolve()
 
@@ -37,7 +38,7 @@ def main():
             raise RuntimeError(result.stderr or result.stdout)
         return json.loads(result.stdout)['id']
 
-    command('init', '--problem', str(FIXTURE / 'problem.md'), '--data', str(FIXTURE / 'data.json'), '--kind', 'optimization')
+    command('init', *(['--pdf'] if args.publication else []), '--workflow-version', '2' if args.publication else '1', '--problem', str(FIXTURE / 'problem.md'), '--data', str(FIXTURE / 'data.json'), '--kind', 'optimization')
     for name in ['solve.py', 'verify.py', 'report.py', 'reproduce.py']:
         shutil.copyfile(FIXTURE / name, project / name)
     (project / 'problem.md').write_text((FIXTURE / 'problem.md').read_text() + '\n基线采用贪心；精确候选枚举所有二站点组合，验证独立枚举需求分配。\n')
@@ -56,6 +57,9 @@ def main():
                         ['verification.json', 'results/checks.json'],
                         [sys.executable, 'verify.py', 'inputs/01-data.json', 'results/baseline.json', 'results/candidate.json', 'verification.json', 'results/checks.json'])
     command('complete', '--stage', 'verify', '--execution', execution)
+    if args.publication:
+        print(json.dumps({'project': str(project), 'next': 'figures', 'model_calls': 0}))
+        return
     execution = execute('report', ['report.py', 'inputs/01-data.json', 'results/baseline.json', 'results/candidate.json', 'verification.json'],
                         ['report.md', 'figures.svg', 'environment.txt'], [sys.executable, 'report.py'])
     command('complete', '--stage', 'report', '--execution', execution)

@@ -6,10 +6,15 @@
 先写结论与依据，再解释方法；每个关键数字标明结果文件/字段，每个引用能定位原始来源。
 用真实数据绘图，将绘图脚本、源数据、图像登记为产物；不要以生成图片代替统计图。
 
-如果任务要求 PDF（state.json 中 require_pdf=true），实际生成 report.pdf 并查看渲染页：
-公式、表格、图注、分页和字形均需检查，在 render-review.md 写下真实观察。
-将 PDF 和渲染检查登记；缺工具可尝试有效替代，不能以改扩展名或空文件通过。
-不要求 PDF 的任务可直接交付 Markdown，不强装文档工具链。
+格式 2 的 PDF 任务在 report 阶段写 LaTeX 源文件与 paper-manifest.json，后续独立进入 compile、inspect。示例：
+
+```json
+{"main":"paper/main.tex","bibliography":"none","files":["paper/main.tex","paper/body.tex","figures/result.pdf"],"claims":[{"text":"关键结论与数值","evidence":"results/result.json"}]}
+```
+
+files 列出编译所需全部文件；每张登记图至少包含一个矢量版本。每项关键结论绑定真实结果证据。外部文献核验后加入 .bib，不编造引用；没有外部引用时明确 bibliography=none。报告中解释模型假设、方程、求解、验证、敏感性和局限。编译过程见 [LaTeX 协议](latex.md)。
+格式 1 旧项目仍在 report 阶段登记 report.pdf 与 render-review.md；使用 upgrade 后改走新版阶段。
+不要求 PDF 时交付 Markdown；仍需完成 figures 阶段或说明无图理由。
 
 ## deliver
 

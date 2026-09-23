@@ -1,0 +1,29 @@
+{
+  "repository": "https://github.com/sweetcornna/mathodology",
+  "commit": "0cfcd93f1dc8ddd26f928f7ec88a09ae3a1d70f6",
+  "license": "MIT",
+  "files": [
+    {
+      "file": "matplotlib_templates.py",
+      "source_path": ".claude/skills/mathodology-figure-presets/templates/matplotlib_templates.py",
+      "sha256": "784f2239db3d85dca4df76285e85c2d8b47a6a87fa83ecfe23c55964fb40f61c"
+    },
+    {
+      "file": "presets.md",
+      "source_path": ".claude/skills/mathodology-figure-presets/references/presets.md",
+      "sha256": "864a06198384eb715fc27e7cf28af24e0426770fa9a1cd755c5c5a0aa35b89cf",
+      "upstream_sha256": "bbc0c6319e105af828ad6ff46f084944fdca23f4ed923be58f6fa158574a856f",
+      "adaptation": "Resolve non-vendored reference links to pinned upstream URLs."
+    },
+    {
+      "file": "style.md",
+      "source_path": ".claude/skills/mathodology-figure-presets/references/style.md",
+      "sha256": "51eab3439fa2cff030b816c43bac459634f5b902edb84d9c2c8d9de078b2bf4c"
+    },
+    {
+      "file": "LICENSE",
+      "source_path": "LICENSE",
+      "sha256": "77dc390b7e3754d7c88363ca54041bea0c2f24c809007c6e591469daf034db94"
+    }
+  ]
+}

@@ -63,3 +63,7 @@ PID 仍存在时会拒绝 abandon；PID 消失也不证明所有外部副作用�
 若通过现有 backend 调用，先在该 Project 的 workspace 准备此包和输入，再将 Skill 路径与任务目标写入 Run prompt。
 本轮未自动接线 backend；普通 Codex 在题目目录打开即可读取 AGENTS.md，或显式要求读取 SKILL.md。
 本地 done 不改变现有后端 awaiting_review/completed 的含义。
+
+## 版本升级
+
+新 init 默认 format 2，新增 figures 和按 --pdf 启用的 compile、inspect。format 1 项目继续使用原阶段，不隐式修改。使用仓库中更新后的脚本执行 `python3 "$WF" upgrade --project 题目目录 --reason "接入图表和论文检查"`。升级保留建模与验证证据，归档并使 report/deliver 失效，替换项目 Skill 包（旧包保留在 .workflow），从新阶段继续。先 check 确认无漂移。原始无 PDF 项目升级不会自动更改交付要求。

@@ -1,0 +1,9 @@
+[
+  {"id":"understand","reference":"problem.md","outputs":["problem.md"],"execution":false},
+  {"id":"data","reference":"data.md","outputs":["data-report.md"],"execution":false},
+  {"id":"baseline","reference":"model.md","outputs":["baseline.md"],"execution":true},
+  {"id":"improve","reference":"model.md","outputs":["model.md"],"execution":true,"optional":true},
+  {"id":"verify","reference":"verify.md","outputs":["verification.json"],"execution":true},
+  {"id":"report","reference":"report.md","outputs":["report.md"],"execution":false},
+  {"id":"deliver","reference":"report.md","outputs":["REPRODUCE.md"],"execution":true}
+]
